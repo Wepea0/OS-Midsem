@@ -79,6 +79,7 @@ int * get_free_frames(){
     //Use number from free_frames_exist to access all free frames and avoid out of bounds access
     if(frame_info_obj.free_frames > 0){
         memcpy(global_free_frames_list, frame_info_obj.free_frame_list, FRAMES_PHYSICAL_MEMORY*sizeof(int));
+        return global_free_frames_list;
         }
     else return NULL;
 }
@@ -87,6 +88,7 @@ int * get_allocated_frames(){
     //Return array of all allocated frames
     if(frame_info_obj.allocated_frames > 0){
         memcpy(global_allocated_frames_list, frame_info_obj.allocated_frame_list, FRAMES_PHYSICAL_MEMORY*sizeof(int));
+        return global_allocated_frames_list;
         }
     else return NULL;
 }
@@ -178,8 +180,25 @@ allocate_frame(111);
 get_frame_info();
 deallocate_frame(3);
 get_frame_info();
+int *allocated_frames_list = get_allocated_frames();
+puts("Allocated frames");
+for (int i = 0; i < sizeof(allocated_frames_list); i++){
+    if(allocated_frames_list[i] > 0){
+        printf("%d - ", allocated_frames_list[i]);
 
-// free_frame_info_status_obj(status_report);
+    }
+}
+int *free_frames_list = get_free_frames();
+puts("\nFree frames");
+for (int i = 0; i < sizeof(free_frames_list); i++){
+    if(free_frames_list[i] > 0){
+        printf("%d - ", free_frames_list[i]);
+    }
+}
+
+
+
+// free_frame_info_status_obj(status_report_obj);
 
 
 
