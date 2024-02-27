@@ -50,6 +50,9 @@ int * integer_to_ptr(long integer);
 
 void print_tlb();
 
+//Fill TLB will -1 values to indicate empty slots
+void initialize_tlb();
+
 
 
 #endif

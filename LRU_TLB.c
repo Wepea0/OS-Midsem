@@ -1,3 +1,9 @@
+//ISSUE - Populate TLB with -1 to start
+//ISSUE - Hits and misses
+//Need to call initialise tlb before rnnung ò````
+
+
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -6,6 +12,7 @@
 #include <stdint.h>
 
 static int TLB[3][3] = {1};
+
 static int misses = 0;
 static int hits = 0;
 
@@ -129,31 +136,43 @@ void print_tlb(){
 
 }
 
-
-void main(){
-    
+void initialize_tlb(){
     for(int i = 0; i<3; i++){
         for(int j = 0; j < 3; j++){
-            TLB[i][j] = i;
+            TLB[i][j] = -1;
             
         }
     }
 
-    printf("\n");
+}
 
+
+void main(){
+    initialize_tlb();
     print_tlb();
+    
+    //    for(int i = 0; i<3; i++){
+    //     for(int j = 0; j < 3; j++){
+    //         TLB[i][j] = i;
+            
+    //     }
+    // }
 
-    int tlb_index = space_exists();
-    int test_ptr_int = ptr_to_integer(test_ptr);
-    add_to_tlb_full(5, test_ptr_int);
+    // for(int i = 0; i < sizeof(TLB[0]); i++){
+    //     TLB[2][0] = -1;
+    // }
 
-    printf("\n");
+    // printf("\n");
 
-    print_tlb();
+    // print_tlb();
 
+    // int tlb_index = space_exists();
+    // int test_ptr_int = ptr_to_integer(test_ptr);
+    // add_to_tlb_space_exists(tlb_index, 2, test_ptr_int);
 
+    // printf("\n");
 
-   
+    // print_tlb();
 
 
     // printf("%d", space_exists());
