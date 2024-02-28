@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include "frame_functions.h"
 
-static char *frame_info[5]; //Frame info array has 5 elements representing the heading, 
+char *frame_info[5]; //Frame info array has 5 elements representing the heading, 
 //Number of free frames & number of allocated frames, free_frame list, allocated frame list, 
 //physical & virtual memory used 
-static int global_free_frames_list[FRAMES_PHYSICAL_MEMORY];
-static int global_allocated_frames_list[FRAMES_PHYSICAL_MEMORY];
-static Frame_info frame_info_obj;
+int global_free_frames_list[FRAMES_PHYSICAL_MEMORY];
+int global_allocated_frames_list[FRAMES_PHYSICAL_MEMORY];
+Frame_info frame_info_obj;
 
 
 
@@ -175,7 +175,7 @@ for (int i = 0; i < sizeof(free_frames_list); i++){
         printf("%d -+ ", free_frames_list[i]);
     }
 }
-print("\n");
+printf("\n");
 }
 
 //Need to create matrix that models page table to test functions (not need but for 

@@ -15,6 +15,17 @@ typedef struct{
         int free_frame_list[8];
     }Frame_info;
 
+    
+extern char *frame_info[5]; //Frame info array has 5 elements representing the heading, 
+//Number of free frames & number of allocated frames, free_frame list, allocated frame list, 
+//physical & virtual memory used 
+extern int global_free_frames_list[FRAMES_PHYSICAL_MEMORY];
+extern int global_allocated_frames_list[FRAMES_PHYSICAL_MEMORY];
+extern Frame_info frame_info_obj;
+
+
+
+
 
 Frame_info create_Frame_info();
 
