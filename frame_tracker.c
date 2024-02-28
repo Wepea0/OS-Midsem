@@ -77,20 +77,18 @@ int free_frames_exist(){
 int * get_free_frames(){
     //Return array of all free frames
     //Use number from free_frames_exist to access all free frames and avoid out of bounds access
-    if(frame_info_obj.free_frames > 0){
-        memcpy(global_free_frames_list, frame_info_obj.free_frame_list, FRAMES_PHYSICAL_MEMORY*sizeof(int));
-        return global_free_frames_list;
-        }
-    else return NULL;
+    
+    memcpy(global_free_frames_list, frame_info_obj.free_frame_list, FRAMES_PHYSICAL_MEMORY*sizeof(int));
+    return global_free_frames_list;
+        
 }
 
 int * get_allocated_frames(){
     //Return array of all allocated frames
-    if(frame_info_obj.allocated_frames > 0){
-        memcpy(global_allocated_frames_list, frame_info_obj.allocated_frame_list, FRAMES_PHYSICAL_MEMORY*sizeof(int));
-        return global_allocated_frames_list;
-        }
-    else return NULL;
+    
+    memcpy(global_allocated_frames_list, frame_info_obj.allocated_frame_list, FRAMES_PHYSICAL_MEMORY*sizeof(int));
+    return global_allocated_frames_list;
+
 }
 
 char ** get_frame_info(){
@@ -142,6 +140,8 @@ char ** get_frame_info(){
     printf("%s\n", used_space_ptr);
     printf("%s\n", free_space_ptr);
 
+    print_free_allocated_frames();
+
 
 
 
@@ -159,54 +159,73 @@ void free_frame_info_status_obj(char **status_report_obj){
     free(status_report_obj);
 }
 
+void print_free_allocated_frames(){
+    int *allocated_frames_list = get_allocated_frames();
+puts("Allocated frames");
+for (int i = 0; i < sizeof(allocated_frames_list); i++){
+    if(allocated_frames_list[i] > -1){
+        printf("%d - ", allocated_frames_list[i]);
+
+    }
+}
+int * free_frames_list = get_free_frames();
+puts("\nFree frames");
+for (int i = 0; i < sizeof(free_frames_list); i++){
+    if(free_frames_list[i] > -1){
+        printf("%d -+ ", free_frames_list[i]);
+    }
+}
+print("\n");
+}
+
 //Need to create matrix that models page table to test functions (not need but for 
 //iterative counting functionality)
 
 //Create 2d matrix 
 
-int main(){
+// int main(){
     
 
-Frame_info frame_info_obj;
-frame_info_obj = create_Frame_info();
-// print_frame_info(frame_info_obj);
-// get_frame_info(frame_info_obj);
-allocate_frame(2);
+// Frame_info frame_info_obj;
+// frame_info_obj = create_Frame_info();
+// // print_frame_info(frame_info_obj);
+// // get_frame_info(frame_info_obj);
+// allocate_frame(2);
 
-get_frame_info();
-allocate_frame(3);
-allocate_frame(4);
-allocate_frame(111);
-get_frame_info();
-deallocate_frame(3);
-get_frame_info();
-int *allocated_frames_list = get_allocated_frames();
-puts("Allocated frames");
-for (int i = 0; i < sizeof(allocated_frames_list); i++){
-    if(allocated_frames_list[i] > 0){
-        printf("%d - ", allocated_frames_list[i]);
+// get_frame_info();
+// allocate_frame(3);
+// allocate_frame(4);
+// allocate_frame(111);
+// get_frame_info();
+// deallocate_frame(3);
+// get_frame_info();
+// int *allocated_frames_list = get_allocated_frames();
+// puts("Allocated frames");
+// for (int i = 0; i < sizeof(allocated_frames_list); i++){
+//     if(allocated_frames_list[i] > 0){
+//         printf("%d - ", allocated_frames_list[i]);
 
-    }
-}
-int *free_frames_list = get_free_frames();
-puts("\nFree frames");
-for (int i = 0; i < sizeof(free_frames_list); i++){
-    if(free_frames_list[i] > 0){
-        printf("%d - ", free_frames_list[i]);
-    }
-}
-
-
-
-// free_frame_info_status_obj(status_report_obj);
+//     }
+// }
+// int *free_frames_list = get_free_frames();
+// puts("\nFree frames");
+// for (int i = 0; i < sizeof(free_frames_list); i++){
+//     if(free_frames_list[i] > 0){
+//         printf("%d - ", free_frames_list[i]);
+//     }
+// }
 
 
+
+// // free_frame_info_status_obj(status_report_obj);
 
 
 
 
 
-return 0;
+
+
+// return 0;
 
 
 
@@ -215,4 +234,4 @@ return 0;
 
 
     
-}
+// }

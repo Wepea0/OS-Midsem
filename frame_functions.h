@@ -18,7 +18,8 @@ typedef struct{
 
 Frame_info create_Frame_info();
 
-void print_frame_info();
+//Print information about frame
+void print_frame_info(Frame_info frame_obj);
 
 //Move from free to allocated
 // Update free frame and allocated frames variables
@@ -51,6 +52,7 @@ int * get_free_frames();
 //Use number from (free_frames_exist - total frames) to access all free frames and avoid out of bounds access
 int * get_allocated_frames();
 
-
+//Print the free and allocated frames. Used with the status report
+void print_free_allocated_frames();
     
 #endif
