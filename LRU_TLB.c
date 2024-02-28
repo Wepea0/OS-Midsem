@@ -1,6 +1,8 @@
-//ISSUE - Populate TLB with -1 to start
 //ISSUE - Hits and misses
-//Need to call initialise tlb before rnnung ò````
+//ISSUE - Need to call initialise_tlb before running (should be called in simulation)
+//ISSUE - Need to compose functions into a complete flow. Think about everything that needs to happen with TLB and 
+//        put them together into larger functions that can be called from other programs
+
 
 
 
@@ -11,39 +13,48 @@
 #include "LRU_functions.h"
 #include <stdint.h>
 
-static int TLB[3][3] = {1};
+int TLB[3][4] = {1};
 
-static int misses = 0;
-static int hits = 0;
+int misses = 0;
+int hits = 0;
+int hit_rate = 0;
+#define TLB_ROWS 3
 
-static int (*test_ptr)[3][3] = &TLB;
+
+//An array containing the number of hits, misses and hit rate
+//First entry [0] - Hits
+//Second entry [1] - Misses
+//Third entry [2] - Hit rate
+int lookup_stats[3];
+
 
 /// @brief Called when there is space in TLB. Adds new entry to tlb and gives it highest priority
 /// @param tlb_index 
 /// @param process_id 
 /// @param page_table_ptr 
-void add_to_tlb_space_exists(int tlb_index, int process_id, int page_table_ptr){
+void add_to_tlb_space_exists(int tlb_index, int process_id, int page_number, int frame_number){
     //Add new entry
     printf("Free index - %d\n", tlb_index);
 
     TLB[tlb_index][0] = process_id;
-    TLB[tlb_index][1] = (intptr_t)page_table_ptr;
-    TLB[tlb_index][2] = sizeof(TLB) - 1; //Give lowest priority
+    TLB[tlb_index][1] = page_number;
+    TLB[tlb_index][2] = frame_number;
+    TLB[tlb_index][3] = sizeof(TLB) - 1; //Give lowest priority
 
-    update_tlb_entry(tlb_index);
+    update_tlb_entry(process_id, page_number);
 
 }
 
-void add_to_tlb_full(int process_id, int page_table_ptr){
+void add_to_tlb_full(int process_id, int page_number, int frame_number){
     int free_index = remove_entry();
     printf("Free index - %d", free_index);
 
     TLB[free_index][0] = process_id;
-    TLB[free_index][1] = (intptr_t)page_table_ptr;
-    TLB[free_index][2] = sizeof(TLB) - 1; 
+    TLB[free_index][1] = page_number;
+    TLB[free_index][2] = frame_number;
+    TLB[free_index][3] = sizeof(TLB) - 1; 
 
-    update_tlb_entry(free_index);
-
+    update_tlb_entry(free_index, page_number);
 
 }
 
@@ -52,66 +63,118 @@ void add_to_tlb_full(int process_id, int page_table_ptr){
 int remove_entry(){
     int lowest_priority = (sizeof(TLB)/sizeof(TLB[0])) - 1;
     for(int i = 0; i < sizeof(TLB); i++){
-        if(TLB[i][0] == lowest_priority){
+        if(TLB[i][3] == lowest_priority){
             TLB[i][0] = -1;
             TLB[i][1] = -1;
             TLB[i][2] = -1;
+            TLB[i][3] = -1;
+
             return i;
         }
     }
     return -1;
 }
 
-int add_to_tlb(int process_id, int page_table_ptr){
+int add_to_tlb(int process_id, int page_number, int frame_number){
     int free_index = space_exists();
     if( free_index > -1){
-        add_to_tlb_space_exists(free_index, process_id, page_table_ptr);
+        add_to_tlb_space_exists(free_index, process_id, page_number, frame_number);
         return 1;
     }
     else{
-        add_to_tlb_full(process_id, page_table_ptr);
+        add_to_tlb_full(process_id, page_number, frame_number);
         return 1;
     }
 
     
 }
 
-void update_tlb_entry(int process_index){
-    int current_priority = TLB[process_index][2];
-    if(current_priority == 0){
-        return;
+int update_tlb_entry(int process_id, int page_number){
+    //Find priority of required process
+    int current_priority;
+    for(int i = 0; i < 3; i ++){
+        if(TLB[i][0] == process_id){
+            if(TLB[i][1] == page_number){
+                current_priority = TLB[i][3];
+            }
+        }
     }
-    for(int i = 0; i < sizeof(TLB); i++){
-       if( TLB[i][2] < current_priority){
-        TLB[i][2] = TLB[i][2] + 1;
+    if(current_priority == 0){
+        return 1;
+    }
+
+    //Lower all other priorities - as applicable
+    for(int i = 0; i < TLB_ROWS; i++){
+       if( TLB[i][3] < current_priority){
+        TLB[i][3] = TLB[i][3] + 1;
        }
     }
-    TLB[process_index][2] = 0;
-    return;
-    //Two situations for an update
-    //TLB entry is already the highest - DONE
-    //TLB entry is not highest
-        //At this point an update to the desired process fra'\
 
+    //Set priority of looked up entry to highest
+    for(int i = 0; i < 3; i ++){
+        if(TLB[i][0] == process_id){
+            if(TLB[i][1] == page_number){
+                TLB[i][3] = 0;
+            }
+        }
+    }
+
+    return 1;
+    
 
 }
 
-int entry_exists(int process_id){
-    for(int i = 0; i < sizeof(TLB); i++){
+int entry_exists(int process_id, int page_number){
+    for(int i = 0; i < TLB_ROWS; i ++){
         if(TLB[i][0] == process_id){
-            return i;
+            if(TLB[i][1] == page_number){
+                return i;
+            }
         }
     }
     return -1;
 }
 
 int space_exists(){
-    for(int i = 0; i < sizeof(TLB); i++){
+    for(int i = 0; i < TLB_ROWS; i++){
         if(TLB[i][0] == -1){
             return i;
         }
     }
     return -1;
+}
+
+int lookup(int process_ID, int page_number){
+    int entry_value = entry_exists(process_ID, page_number);
+    if(entry_value > -1){
+        update_hits();
+        //Once this happens, the priority of looked up entry needs to be changed
+        return TLB[entry_value][1];
+        //Returned value needs to be convered to int pointer to be able to access page table
+    }
+    else{
+        update_misses();
+        //Missed entry needs to added to table
+        return 0;
+    }
+}
+
+void update_hits(){
+    hits++;
+}
+
+void update_misses(){
+    misses++;
+}
+
+int * get_lookup_stats(){
+    lookup_stats[0] = hits;
+    lookup_stats[1] = misses;
+    
+    hit_rate = (hits / (hits + misses)) * 100;
+    lookup_stats[2] = hit_rate;
+
+    return lookup_stats;
 }
 
 
@@ -126,9 +189,10 @@ int * integer_to_ptr(long integer){
 }
 
 void print_tlb(){
-    for(int i = 0; i<3; i++){
-        for(int j = 0; j < 3; j++){
-            printf("%d ~ ", TLB[i][j]);
+    puts("Process ID  ~      Page No          ~       Frame No        ~           Priority");
+    for(int i = 0; i< TLB_ROWS; i++){
+        for(int j = 0; j < 4; j++){
+            printf("%d           ~           ", TLB[i][j]);
             
         }
         printf("\n");
@@ -138,7 +202,7 @@ void print_tlb(){
 
 void initialize_tlb(){
     for(int i = 0; i<3; i++){
-        for(int j = 0; j < 3; j++){
+        for(int j = 0; j < 4; j++){
             TLB[i][j] = -1;
             
         }
@@ -151,32 +215,30 @@ void main(){
     initialize_tlb();
     print_tlb();
     
-    //    for(int i = 0; i<3; i++){
-    //     for(int j = 0; j < 3; j++){
-    //         TLB[i][j] = i;
+       for(int i = 0; i<3; i++){
+        for(int j = 0; j < 4; j++){
+            TLB[i][j] = i;
             
-    //     }
-    // }
+        }
+    }
 
-    // for(int i = 0; i < sizeof(TLB[0]); i++){
-    //     TLB[2][0] = -1;
-    // }
+    for(int i = 0; i < sizeof(TLB[0]); i++){
+        TLB[2][0] = -1;
+    }
 
-    // printf("\n");
+    printf("\n");
 
-    // print_tlb();
+    print_tlb();
 
-    // int tlb_index = space_exists();
-    // int test_ptr_int = ptr_to_integer(test_ptr);
-    // add_to_tlb_space_exists(tlb_index, 2, test_ptr_int);
+    add_to_tlb(0, 9, 3);
 
-    // printf("\n");
+    printf("\n");
 
-    // print_tlb();
+    print_tlb();
 
 
     // printf("%d", space_exists());
-    // printf("\n%d\n", entry_exists(2));
+    printf("\n%d\n", entry_exists(2, 2));
     return;
 
 }
