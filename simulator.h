@@ -19,17 +19,31 @@
 #define MAX_PROCESS_SIZE        64 // KB
 */
 
-typedef struct { 
-    int virtual_address;
-    int pid;
-    int size;
-    //int* page_table;
-} Process;
+//Returns 1 if successful and 0 otherwise
+int pseudo_malloc(int *page_table_ptr, int memory_request);
 
-typedef struct {
-    Process process_list[4];
-    int* main_page_table;
-} MMU;
+//Definition which should go into simulator.c 
+//Generate random extra allocation (I'm thinking between 1 and 3)
+//Generate a random number which will be the process requesting the new allocation (will need to be between and inc 0 and num_processes) 
+//in the process list to allocate it
+//Check whether 
+// - The new memory allocation will push the total over the max for each process
+// - Check if the allocation can be fulfilled
+// - If it fails either of these, reject memory request
+
+
+//Malloc will be called after all processes have been created and before execution starts
+//Free will be called after processes which have been malloced execute successfully (Will print output to show malloced allocation has been freed)
+//Free should also have deallocation of frames.
+
+
+
+
+
+//TODO #13 determine flow of execution here
+int pseudo_free();
+
+
 
 
 //

@@ -1,3 +1,4 @@
+//ISSUE - Frame object needs to be initialized in simulation function (could be part of setup) - create_frame_obj();
 //ISSUE - No need for physical memory 2d array. 1d array works fine as frames are always fully allocated or free
 //ISSUE - What are we doing with the physical address (no more frame table needed)
 //TODO - Confirm whether using variable to track whether process has had its addresses mapped or putting unmapped processes into a separate list from process_list (will need to modify the names, make them more descriptive)
@@ -13,7 +14,7 @@
 //TODO #6 - Create process object in create process function and add it to process list 
 //TODO #8 - Change type of process list to Process object
 //TODO #7 - Create function objects to edit process list (add and remove) by process ID
-//TODO - Frame object needs to be initialized in simulation function (could be part of setup) - create_frame_obj();
+//TODO #16 - Refine printed output to make more readable. Write statistics to file
 
 
 
@@ -21,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #include "frame_functions.h"
 #include "Address_Translation.h"
 #include "simulator.h"
@@ -124,8 +126,8 @@ int can_fulfill_request(int memory_request){
 
 
 int first_fit() {
-    int frame = get_next_free_frame();
-    return frame;
+    return get_next_free_frame();
+   
 }
 
 
@@ -194,6 +196,8 @@ void create_process(){
 
     //Add to process list
     //TODO #15 add_to_process_list(process obj);
+
+    sleep(1);
 
 
 }

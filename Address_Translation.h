@@ -33,6 +33,12 @@
 //     int *page_table;
 // }Process;
 
+typedef struct { 
+    int process_id;
+    int is_complete;
+    int size;
+    int* page_table;
+} Process;
 
 
 //Variables
@@ -87,11 +93,7 @@ void create_process();
 //Returns pointer to page table ptr created for the process
 int * map_virtual_addresses(int *page_table_ptr, int num_pages_requested, int *process_details);
 
-//Returns 1 if successful and 0 otherwise
-int pseudo_malloc(int *page_table_ptr, int memory_request);
 
-//TODO #13 determine flow of execution here
-int pseudo_free();
 
 #endif
 
