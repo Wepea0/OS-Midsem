@@ -17,7 +17,6 @@ Frame_info frame_info_obj;
 //Constructor
 //ISSUE - Look into using static variables
 Frame_info create_Frame_info(){
-    frame_info_obj;
     frame_info_obj.free_frames = FRAMES_PHYSICAL_MEMORY;
     frame_info_obj.allocated_frames = 0;
 
@@ -32,11 +31,7 @@ Frame_info create_Frame_info(){
     return frame_info_obj;
 
 }
-void print_frame_info(Frame_info frame_obj){
-    for (int i = 0; i < 8 ; i++){
-        printf("%d\n", frame_obj.allocated_frame_list[i]);
-    }
-}
+
 
 void allocate_frame(int frame_to_be_removed){
     //Move from free to allocated
@@ -72,6 +67,15 @@ int free_frames_exist(){
     //0 represents false
     //Non-zero will mean true and also define the free frames
     return frame_info_obj.free_frames;
+}
+
+int get_next_free_frame(){
+    for(int i = 0; i < FRAMES_PHYSICAL_MEMORY; i++){
+        if(frame_info_obj.free_frame_list[i] != -1){
+            return frame_info_obj.free_frame_list[i];
+        }
+    }
+    return -1;
 }
 
 int * get_free_frames(){

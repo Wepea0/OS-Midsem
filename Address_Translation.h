@@ -4,8 +4,6 @@
 #define MAX_PAGES 16
 #define MAX_FRAMES 8
 #define MAX_OFFSET 4
-#define MAX_PROCESS_NUM 16
-#define MAX_PROCESS_PAGES 3
 
 #define VIRTUAL_MEMORY_SIZE     128 // KB
 #define PHYSICAL_MEMORY_SIZE    64  // KB
@@ -23,13 +21,19 @@
 #define MAX_OFFSET              4
 
 
-typedef struct{
-    int process_number;
-    int process_size;
-    int offset;
+//TODO #12 - Align on structure of process struct
+//Thoughts - Whether to/How to store process page table as attribute
 
-    int *page_table;
-}Process;
+
+// typedef struct{
+//     int process_number;
+//     int process_size;
+//     int offset;
+
+//     int *page_table;
+// }Process;
+
+
 
 //Variables
 // initializing the memory spaces
@@ -50,8 +54,7 @@ extern int process_list[MAX_PROCESS_NUM];
 // and decreased when end_process is used
 extern int number_of_processes;
 
-void create_process();
-void assign_frames();
+
 
 
 //Returns array of attributes of a process that have been generated randomly
@@ -70,8 +73,25 @@ void populate_page_table(int row, int col, int (*mem));
 
 void fillVirtualMemory(int start, int num_pages);
 
-int first_fit(int a[]);
+int first_fit();
 
+//The function `int can_fulfill(int memory_request);` is checking if the system can fulfill a memory request based on the available physical memory.  
+//It takes an integer parameter `memory_request` which represents the amount of memory requested by a process.
+//Memory request refers to size in  number of pages
+int can_fulfill_request(int num_pages_request);
+
+void create_process();
+
+//Maps num of pages to frame numbers
+//See generate_process_attributes for values in map_virtual_addresses
+//Returns pointer to page table ptr created for the process
+int * map_virtual_addresses(int *page_table_ptr, int num_pages_requested, int *process_details);
+
+//Returns 1 if successful and 0 otherwise
+int pseudo_malloc(int *page_table_ptr, int memory_request);
+
+//TODO #13 determine flow of execution here
+int pseudo_free();
 
 #endif
 

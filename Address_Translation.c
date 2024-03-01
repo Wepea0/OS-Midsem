@@ -1,17 +1,20 @@
-//ISSUE - Functions defined in main cannot be called from outside of it, causing problems during integration
-//ISSUE - Initialize function for outer page table causing issue as it attempts to assign to 2d array when a 1d array of int pointers has been declared;
-//ISSUE - Population of outer page table after process details have been randomly generated assigns values as if outer page table is 2d array instead of 1d
-//ISSUE - Pge table is global variable but different page tables need to be assigned for each table in the list. Need to make sure different page tables are being assigned - check scope and possible redefining of value
+//ISSUE - No need for physical memory 2d array. 1d array works fine as frames are always fully allocated or free
 //ISSUE - What are we doing with the physical address (no more frame table needed)
-//ISSUE - Look into using process structs (if necessary)
-//ISSUE - Need to harmonize process ID and process number usage 
-//ISSUE - Difference between MAX PROCESS PAGES and MAX PAGES
+//TODO - Confirm whether using variable to track whether process has had its addresses mapped or putting unmapped processes into a separate list from process_list (will need to modify the names, make them more descriptive)
 
-//TODO - Add check after a process' initial memory request has been identified - to determine whether whole request can be fulfilled
+//TODO #9 - Add check after a process' initial memory request has been identified - to determine whether whole request can be fulfilled
         //If not - Decide on path(Options include: Skip process ie. Reject its request/ Fulfill some/ Make it wait? - Will need to show the actual changes)
+        //WAIT - Page table will be created but with no mappings (mappings will be done when memory is deallocated(process finishes execution) 
+        //and the check shows memory request can be fulfilled)
+        //In order to do this, map frame to virtual memory will need to be decoupled from process creation
+        //Check function can also support malloc (function can allocation be fulfilled(params int process size_being_requested))
+        //in case of malloc, if cannot be fulfilled, reject and end process
+
 //TODO #6 - Create process object in create process function and add it to process list 
 //TODO #8 - Change type of process list to Process object
 //TODO #7 - Create function objects to edit process list (add and remove) by process ID
+//TODO - Frame object needs to be initialized in simulation function (could be part of setup) - create_frame_obj();
+
 
 
 
@@ -44,11 +47,21 @@ int number_of_processes;
 
 
 void add_to_process_list(int process_id){
-    //add to first non -1 space
+    //add to first -1 space
 }
 
 void remove_from_process_list(int process_id){
     //remove require id and change space to -1;
+}
+
+void print_virtual_memory(){
+    printf("\n     ****************         Virtual memory allocation  ******************\n");
+    for(int i = 0; i < MAX_PAGES; i++){
+        for(int j = 0; j < MAX_OFFSET; j++){
+            printf("%d  *  ", virtual_memory[i][j] );
+        }
+        printf("\n");
+    }
 }
 
 
@@ -83,39 +96,10 @@ void fillVirtualMemory(int start, int num_pages) {
     }
 }
 
-int first_fit(int logical_address[]) {
-    int process_offset = logical_address[2];
-    int offset_so_far = 0;
-    int valid = 0;
-    int frame = 0;
-
-    for (int i = 0; i < MAX_FRAMES; i++) {
-        for (int j = 0; j < MAX_OFFSET; j++) {
-            if (physical_memory[i][j] == 0)  {
-                valid++; 
-                if (valid == MAX_OFFSET) {
-                    for (int k = 0; k < process_offset; k++) {
-                        physical_memory[i][k] = 1;
-                        frame = i;
-                        goto exit_all_loops;
-                    }
-                }
-            }
-            else {
-                valid = 0;
-                break;
-            }
-        }
-    }
-
-    exit_all_loops:
-    return frame;
-}
-
-
 int * generate_process_attributes(){
+    srand(time(NULL));
     int process_number = number_of_processes;
-    int num_pages = (rand() % (MAX_PROCESS_PAGES - 1)) + 1; // Generate a random number between 1 and MAX_PAGES
+    int num_pages = (rand() % (MAX_PAGE_PER_PROCESS)) + 1; // Generate a random number between 1 and MAX_PAGES
     int offset_size = rand() % MAX_OFFSET;
 
     process_details[0] = process_number;
@@ -126,15 +110,46 @@ int * generate_process_attributes(){
 }
 
 
-void print_virtual_memory(){
-    printf("\n     ****************         Virtual memory allocation  ******************\n");
-    for(int i = 0; i < MAX_PAGES; i++){
-        for(int j = 0; j < MAX_OFFSET; j++){
-            printf("%d  *  ", virtual_memory[i][j] );
-        }
-        printf("\n");
+
+int can_fulfill_request(int memory_request){
+    int required_num_pages = memory_request;
+    if(free_frames_exist() >= required_num_pages){
+        printf("\nNumber of free pages = %d, Request = %d. Approved \n", free_frames_exist(), required_num_pages);
+        return 1;
     }
+    printf("\nNumber of free pages = %d, Request = %d. Declined \n", free_frames_exist(), required_num_pages);
+    return 0;
+
 }
+
+
+int first_fit() {
+    int frame = get_next_free_frame();
+    return frame;
+}
+
+
+int * map_virtual_addresses(int *page_table_ptr, int num_pages_requested, int *process_details){
+    int num_pages = num_pages_requested;
+    int process_id = process_details[0];
+    int offset_size = process_details[2];
+
+    for (int i = 0; i < num_pages; i++) {
+        int logical_address[3] = {process_id, i, offset_size};
+        int frame_number = first_fit();
+        page_table_ptr[i] = frame_number;
+        allocate_frame(frame_number);
+
+        //Scaffolding
+        printf("logical Address: [%d, %d, %d]\n", process_id, i, offset_size);
+
+    }
+    //Fill virtual memory based on number of pages generated and the number of processes already created
+    fillVirtualMemory(process_id * MAX_PAGE_PER_PROCESS, num_pages);
+    return page_table_ptr;
+}
+
+
 
 void create_process(){
     //Create process details
@@ -146,24 +161,25 @@ void create_process(){
     //Scaffolding
     printf("Process number = %d\nNumber of Pages = %d\nOffset Size = %d\n", process_number, num_pages, offset_size);
 
-    //Fill virtual memory based on number of pages generated and the number of processes already created
-    fillVirtualMemory(process_number * MAX_PROCESS_PAGES, num_pages);
+    int new_page_table[MAX_PAGES] = {[0 ... MAX_PAGES-1] = -1};
+    int *new_page_table_ptr;
+
+    if(can_fulfill_request(num_pages) == 1){ //Successful mapping for all this process' pages
+        new_page_table_ptr = map_virtual_addresses(new_page_table, num_pages, process_details);
+        outer_page_table[process_number] = new_page_table_ptr;
+
+    }
+    else{ //Process has no mappings for its pages 
+        outer_page_table[process_number] = new_page_table;
+        printf("Could not allocate physical memory for this process at this time");       
+        //TODO #10 In case of normal check, add to process list but with attribute not_mapped_to_physical OR add to separate list of processes waiting for memory
+
+    }
+
 
     // //Scaffolding
     // print_virtual_memory();
 
-    //Fill page table for this particular process
-    for (int i = 0; i < num_pages; i++) {
-        int logical_address[3] = {process_number, i, offset_size};
-        int frame_number = first_fit(logical_address);
-        page_table[i] = frame_number;
-        int physical_address[2] = {frame_number, offset_size}; //Needed?
-        printf("logical Address: [%d, %d, %d]\tPhysical Address: [%d, %d]\n", process_number, i, offset_size, frame_number, offset_size);
-
-    }
-
-    //Assign this page table to this process in the master (outer) page table
-    outer_page_table[process_number] = page_table;
 
     //Scaffolding - Print the newest entry of the outer page table
     int *test_page_table;
@@ -171,25 +187,22 @@ void create_process(){
     printf("\nCurrent process number %d\nPage table entries:\n", process_number);
     for(int i = 0; i < num_pages; i++){
         printf("Page number: %d  -- maps to --  Frame number:%d\n", i, test_page_table[i]);
-
-    
     }
 
     //Increment process number
     number_of_processes++;
 
     //Add to process list
-    //add_to_process_list(process_number);
-    print_virtual_memory();
+    //TODO #15 add_to_process_list(process obj);
+
 
 }
 
 
-int main(void) {
+int main() {
     Frame_info frame_info_obj = create_Frame_info();
     get_frame_info();
 
-    srand(time(NULL));
     initializeMemory2D(MAX_PAGES, MAX_OFFSET, virtual_memory);
     initializeMemory2D(MAX_FRAMES, MAX_OFFSET, physical_memory);
 
@@ -197,11 +210,17 @@ int main(void) {
     populate_outer_page_table(MAX_PROCESS_NUM, 1, outer_page_table);
 
     //Determine how many processes will be created for this one simulation
-    int number_simulated_processes = 2;
+    int number_simulated_processes = 5;
     for(int i = 0; i < number_simulated_processes; i++){
         create_process();
 
+    //Scaffolding
+    //See frame info after each process is created
+        get_frame_info();
+
     }
+
+    puts("\nProcess creation done");
     
 
 

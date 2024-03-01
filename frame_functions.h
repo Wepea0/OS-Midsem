@@ -29,8 +29,6 @@ extern Frame_info frame_info_obj;
 
 Frame_info create_Frame_info();
 
-//Print information about frame
-void print_frame_info(Frame_info frame_obj);
 
 //Move from free to allocated
 // Update free frame and allocated frames variables
@@ -40,6 +38,8 @@ void allocate_frame(int frame_number);
 //Move from allocated to free
 // Update free frame and allocated frames variables
 void deallocate_frame(int frame_number);
+
+
     
 
 //Return string with
@@ -53,6 +53,9 @@ char ** get_frame_info();
 //0 represents false
 //Non-zero will mean true and also define the free frames
 int free_frames_exist();
+
+//Returns first free frame or -1 if none exist
+int get_next_free_frame();
     
 
 //Return array of free frames with -1 showing frames which are allocated
