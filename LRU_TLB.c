@@ -1,5 +1,4 @@
-//ISSUE - Hits and misses
-//ISSUE - Need to call initialise_tlb before running (should be called in simulation)
+//TODO #2 - Need to call initialise_tlb before running (should be called in simulation)
 //ISSUE - Need to compose functions into a complete flow. Think about everything that needs to happen with TLB and 
 //        put them together into larger functions that can be called from other programs
 
@@ -39,7 +38,8 @@ void add_to_tlb_space_exists(int tlb_index, int process_id, int page_number, int
     TLB[tlb_index][0] = process_id;
     TLB[tlb_index][1] = page_number;
     TLB[tlb_index][2] = frame_number;
-    TLB[tlb_index][3] = sizeof(TLB) - 1; //Give lowest priority
+
+    TLB[tlb_index][3] = sizeof(TLB) - 1; //Give smallest priority
 
     update_tlb_entry(process_id, page_number);
 
@@ -52,6 +52,7 @@ void add_to_tlb_full(int process_id, int page_number, int frame_number){
     TLB[free_index][0] = process_id;
     TLB[free_index][1] = page_number;
     TLB[free_index][2] = frame_number;
+
     TLB[free_index][3] = sizeof(TLB) - 1; 
 
     update_tlb_entry(free_index, page_number);
@@ -148,14 +149,13 @@ int lookup(int process_ID, int page_number){
     int entry_value = entry_exists(process_ID, page_number);
     if(entry_value > -1){
         update_hits();
-        //Once this happens, the priority of looked up entry needs to be changed
+        update_tlb_entry(process_ID, page_number);  //Once hit happens, the priority of looked up entry is changed
         return TLB[entry_value][1];
-        //Returned value needs to be convered to int pointer to be able to access page table
     }
     else{
         update_misses();
-        //Missed entry needs to added to table
-        return 0;
+        //TODO #1 - Missed entry needs to added to table
+        return -1;
     }
 }
 

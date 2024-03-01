@@ -9,6 +9,10 @@
 
 //TODO - Add check after a process' initial memory request has been identified - to determine whether whole request can be fulfilled
         //If not - Decide on path(Options include: Skip process ie. Reject its request/ Fulfill some/ Make it wait? - Will need to show the actual changes)
+//TODO #6 - Create process object in create process function and add it to process list 
+//TODO #8 - Change type of process list to Process object
+//TODO #7 - Create function objects to edit process list (add and remove) by process ID
+
 
 
 #include <stdio.h>
@@ -16,6 +20,7 @@
 #include <time.h>
 #include "frame_functions.h"
 #include "Address_Translation.h"
+#include "simulator.h"
 
 
 

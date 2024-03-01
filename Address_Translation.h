@@ -7,6 +7,21 @@
 #define MAX_PROCESS_NUM 16
 #define MAX_PROCESS_PAGES 3
 
+#define VIRTUAL_MEMORY_SIZE     128 // KB
+#define PHYSICAL_MEMORY_SIZE    64  // KB
+#define PAGE_SIZE               8   // KB w/ 2KB per cell
+#define FRAME_SIZE              8   // KB w/ 2KB per cell
+#define BYTES_PER_CELL          2   // 2 KB 
+#define CELLS_PER_PAGE          4
+#define CELLS_PER_FRAME         (CELLS_PER_PAGE)
+#define TOTAL_NUMBER_OF_PAGES   (VIRTUAL_MEMORY_SIZE/PAGE_SIZE)     // 16
+#define TOTAL_NUMBER_OF_FRAMES  (PHYSICAL_MEMORY_SIZE/FRAME_SIZE)   // 8
+#define MAX_NUMBER_OF_PROCESSES 4
+#define MAX_PROCESS_SIZE        32 // KB
+#define MAX_PROCESS_NUM         (VIRTUAL_MEMORY_SIZE / MAX_PROCESS_SIZE)
+#define MAX_PAGE_PER_PROCESS    (MAX_PROCESS_SIZE / (CELLS_PER_PAGE * 2))
+#define MAX_OFFSET              4
+
 
 typedef struct{
     int process_number;

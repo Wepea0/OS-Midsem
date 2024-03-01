@@ -73,8 +73,8 @@ void print_tlb();
 //Fill TLB will -1 values to indicate empty slots
 void initialize_tlb();
 
-//Returns int representing pointer if the process ID has a page table (pointer) in TLB (This int needs to be converted back to a pointer)
-//Returns 0 if the process ID does not have page table in TLB
+//Returns int representing frame number if the process ID has a frame_number in TLB
+//Returns -1 if the process ID does not have frame number in TLB
 int lookup(int process_ID, int page_number);
 
 //Update (increase) the number of hits
